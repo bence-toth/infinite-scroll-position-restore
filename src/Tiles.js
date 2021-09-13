@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-
 import "./Tiles.css";
 
 const apiUrl = "https://www.reddit.com/r/photographs.json";
@@ -13,29 +12,46 @@ const fetchTilesPage = (afterId) => {
   }
 };
 
+const extractTilesData = (result) =>
+  result.data.children.map((child) => ({
+    id: child.data.name,
+    image: child.data.thumbnail,
+    imageWidth: child.data.thumbnail_width,
+    imageHeight: child.data.thumbnail_height,
+  }));
+
 const Tiles = ({ tiles, setTiles, selectedTileId, setSelectedTileId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadAfterId, setLoadAfterId] = useState();
 
+  // Load first page of tiles if no tiles have been loaded yet
   useEffect(() => {
     if (tiles.length === 0) {
       setIsLoading(true);
       fetchTilesPage()
         .then((response) => response.json())
         .then((result) => {
-          setTiles(
-            result.data.children.map((child) => ({
-              id: child.data.name,
-              image: child.data.thumbnail,
-              imageWidth: child.data.thumbnail_width,
-              imageHeight: child.data.thumbnail_height,
-            }))
-          );
+          setTiles(extractTilesData(result));
           setIsLoading(false);
         });
     }
   }, [tiles, setTiles]);
 
+  // Load next page of tiles when `loadAfterId` changes
+  useEffect(() => {
+    if (loadAfterId) {
+      setIsLoading(true);
+      fetchTilesPage(loadAfterId)
+        .then((response) => response.json())
+        .then((result) => {
+          setTiles((tiles) => [...tiles, ...extractTilesData(result)]);
+          setIsLoading(false);
+          setLoadAfterId(undefined);
+        });
+    }
+  }, [loadAfterId, setTiles]);
+
+  // Scroll back to the selected tile when coming from the Tile component
   useEffect(() => {
     if (selectedTileId) {
       const positionToScrollTo =
@@ -46,27 +62,7 @@ const Tiles = ({ tiles, setTiles, selectedTileId, setSelectedTileId }) => {
     }
   }, [selectedTileId, setSelectedTileId]);
 
-  useEffect(() => {
-    if (loadAfterId) {
-      setIsLoading(true);
-      fetchTilesPage(loadAfterId)
-        .then((response) => response.json())
-        .then((result) => {
-          setTiles((tiles) => [
-            ...tiles,
-            ...result.data.children.map((child) => ({
-              id: child.data.name,
-              image: child.data.thumbnail,
-              imageWidth: child.data.thumbnail_width,
-              imageHeight: child.data.thumbnail_height,
-            })),
-          ]);
-          setIsLoading(false);
-          setLoadAfterId(undefined);
-        });
-    }
-  }, [loadAfterId, setTiles]);
-
+  // Load next page if scrolled close to the bottom
   const handleOnScroll = useCallback(() => {
     const distanceFromBottom =
       document.querySelector("body").scrollHeight -
@@ -80,6 +76,7 @@ const Tiles = ({ tiles, setTiles, selectedTileId, setSelectedTileId }) => {
     }
   }, [isLoading, tiles]);
 
+  // Call `handleOnScroll` when the body is being scrolled
   useEffect(() => {
     window.addEventListener("scroll", handleOnScroll);
     return () => {
