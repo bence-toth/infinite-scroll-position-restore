@@ -19,6 +19,7 @@ const App = () => {
             tiles={tiles}
             setTiles={setTiles}
             selectedTileId={selectedTileId}
+            setSelectedTileId={setSelectedTileId}
           />
         </Route>
       </Switch>

@@ -3,6 +3,10 @@
   margin: 0 auto;
 }
 
+.tilesContainer a {
+  display: block;
+}
+
 .tilesContainer img {
   width: 100%;
 }

@@ -13,7 +13,7 @@ const fetchTilesPage = (afterId) => {
   }
 };
 
-const Tiles = ({ tiles, setTiles }) => {
+const Tiles = ({ tiles, setTiles, selectedTileId, setSelectedTileId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadAfterId, setLoadAfterId] = useState();
 
@@ -27,12 +27,24 @@ const Tiles = ({ tiles, setTiles }) => {
             result.data.children.map((child) => ({
               id: child.data.name,
               image: child.data.thumbnail,
+              imageWidth: child.data.thumbnail_width,
+              imageHeight: child.data.thumbnail_height,
             }))
           );
           setIsLoading(false);
         });
     }
   }, [tiles, setTiles]);
+
+  useEffect(() => {
+    if (selectedTileId) {
+      const positionToScrollTo =
+        document.getElementById(selectedTileId).offsetTop;
+      console.log(positionToScrollTo);
+      window.scrollTo(0, positionToScrollTo);
+      setSelectedTileId(undefined);
+    }
+  }, [selectedTileId, setSelectedTileId]);
 
   useEffect(() => {
     if (loadAfterId) {
@@ -45,6 +57,8 @@ const Tiles = ({ tiles, setTiles }) => {
             ...result.data.children.map((child) => ({
               id: child.data.name,
               image: child.data.thumbnail,
+              imageWidth: child.data.thumbnail_width,
+              imageHeight: child.data.thumbnail_height,
             })),
           ]);
           setIsLoading(false);
@@ -75,9 +89,13 @@ const Tiles = ({ tiles, setTiles }) => {
 
   return (
     <div className="tilesContainer">
-      {tiles.map(({ id, image }) => (
-        <Link key={id} to={`/tile/${id}`}>
-          <img src={image} alt="" />
+      {tiles.map(({ id, image, imageWidth, imageHeight }) => (
+        <Link key={id} id={id} to={`/tile/${id}`}>
+          <img
+            src={image}
+            alt=""
+            style={{ aspectRatio: `${imageWidth} / ${imageHeight}` }}
+          />
         </Link>
       ))}
       {isLoading && <p className="loader">Loading...</p>}
