@@ -1,0 +1,15 @@
+.tilesContainer {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.tilesContainer > img {
+  width: 100%;
+}
+
+.tilesContainer .loader {
+  font-size: 32px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 64px;
+}

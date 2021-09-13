@@ -1,5 +1,11 @@
+import Tiles from "./Tiles";
+
 const App = () => {
-  return <div></div>;
+  return (
+    <div>
+      <Tiles />
+    </div>
+  );
 };
 
 export default App;
