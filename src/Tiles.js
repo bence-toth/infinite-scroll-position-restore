@@ -1,4 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
+
 import "./Tiles.css";
 
 const apiUrl = "https://www.reddit.com/r/photographs.json";
@@ -11,25 +13,26 @@ const fetchTilesPage = (afterId) => {
   }
 };
 
-const Tiles = () => {
-  const [tiles, setTiles] = useState([]);
+const Tiles = ({ tiles, setTiles }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadAfterId, setLoadAfterId] = useState();
 
   useEffect(() => {
-    setIsLoading(true);
-    fetchTilesPage()
-      .then((response) => response.json())
-      .then((result) => {
-        setTiles(
-          result.data.children.map((child) => ({
-            id: child.data.name,
-            image: child.data.thumbnail,
-          }))
-        );
-        setIsLoading(false);
-      });
-  }, []);
+    if (tiles.length === 0) {
+      setIsLoading(true);
+      fetchTilesPage()
+        .then((response) => response.json())
+        .then((result) => {
+          setTiles(
+            result.data.children.map((child) => ({
+              id: child.data.name,
+              image: child.data.thumbnail,
+            }))
+          );
+          setIsLoading(false);
+        });
+    }
+  }, [tiles, setTiles]);
 
   useEffect(() => {
     if (loadAfterId) {
@@ -48,7 +51,7 @@ const Tiles = () => {
           setLoadAfterId(undefined);
         });
     }
-  }, [loadAfterId]);
+  }, [loadAfterId, setTiles]);
 
   const handleOnScroll = useCallback(() => {
     const distanceFromBottom =
@@ -73,7 +76,9 @@ const Tiles = () => {
   return (
     <div className="tilesContainer">
       {tiles.map(({ id, image }) => (
-        <img key={id} src={image} alt="" />
+        <Link key={id} to={`/tile/${id}`}>
+          <img src={image} alt="" />
+        </Link>
       ))}
       {isLoading && <p className="loader">Loading...</p>}
     </div>
